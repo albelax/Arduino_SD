@@ -1,6 +1,7 @@
 #include <SD.h>
 #include <TFT.h>
 #include <SPI.h>
+//#include <Esplora.h>
 
 uint8_t p;
 // SD Chip Select pin
@@ -28,7 +29,7 @@ void setup()
   }
   Serial.println("Succeded");
   
-  String p = loadPokemon(pos, step);
+  char * p = loadPokemon(pos, step);
   Serial.println(p);
 }
 
@@ -37,17 +38,18 @@ void loop()
  
 }
 
-String loadPokemon(short const _pokemonNum, short const _step)
+char* loadPokemon(short const _pokemonNum, short const _step)
 {
-  String ret;
+  char * ret;
   File f = SD.open("pokedex.txt",FILE_READ);
   f.seek(_step*_pokemonNum);
   while (f.position() != (_pokemonNum * _step) + _step) 
   {
-    ret = f.readStringUntil('\n');
+    ret = f.readStringUntil('\n').c_str();
   }
   
   f.close();
   return ret;
 }
+
 
