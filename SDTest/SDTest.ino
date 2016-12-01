@@ -11,8 +11,9 @@ uint8_t p;
 // SD Chip Select pin
 const char SD_card = 8;
 const short step = 56;
-short pos = 149;
+short pos = 0;
 short oldPos = pos;
+PImage img;
 
 String lookForBreak(String _str, char _breakSym, int _breaktot)
 {
@@ -90,28 +91,32 @@ void loop()
   // PImage pokemonImage = EsploraTFT.loadImage(imageName.c_str());
   
   if(Esplora.readButton(SWITCH_LEFT) == LOW && pos > 0)
-        {
-          EsploraTFT.stroke(0, 0, 0);
-          EsploraTFT.text(id.c_str(), 50, 10);
-          EsploraTFT.text(name.c_str(), 50, 20);
-          EsploraTFT.text(type.c_str(), 50, 30);
-          delay(50);
-          pos -= 1;          
-        }
-  else if(Esplora.readButton(SWITCH_RIGHT) == LOW && pos < 150)
-        {
-          EsploraTFT.stroke(0, 0, 0);
-          EsploraTFT.text(id.c_str(), 50, 10);
-          EsploraTFT.text(name.c_str(), 50, 20);
-          EsploraTFT.text(type.c_str(), 50, 30);
-          delay(50);
-          pos += 1;          
-        }
-        // if(pos != oldPos)
-        // {
-        //   EsploraTFT.image(pokemonImage, 10, 40);
-        //   oldPos = pos;
-        // }
+  {
+    EsploraTFT.stroke(0, 0, 0);
+    EsploraTFT.text(id.c_str(), 50, 10);
+    EsploraTFT.text(name.c_str(), 50, 20);
+    EsploraTFT.text(type.c_str(), 50, 30);
+    delay(50);
+    pos -= 1;          
+   }
+   else if(Esplora.readButton(SWITCH_RIGHT) == LOW && pos < 150)
+   {
+     EsploraTFT.stroke(0, 0, 0);
+     EsploraTFT.text(id.c_str(), 50, 10);
+     EsploraTFT.text(name.c_str(), 50, 20);
+     EsploraTFT.text(type.c_str(), 50, 30);
+     delay(50);
+     pos += 1;          
+    }
+    
+    if(pos != oldPos)
+    {
+    //EsploraTFT.image(pokemonImage, 10, 40);
+      //img = loadImage(pos,'f');
+      oldPos = pos;
+    }
+  img = loadImage(pos+1,'f');
+  EsploraTFT.image(img, 0, 0);
   EsploraTFT.text(type.c_str(), 50, 30);
   EsploraTFT.text(name.c_str(), 50, 20);
   EsploraTFT.text(id.c_str(), 50, 10);
@@ -138,4 +143,15 @@ String loadPokemon(short _pokemonNum, short const _step, int _entry)
   return ret;
 }
 
-
+PImage loadImage(int _PokemonNum, char _mode)
+{
+  PImage image;
+  String filename = "";
+  filename += _mode;
+  filename += "_";
+  filename += _PokemonNum;
+  filename += ".bmp";
+  Serial.println(filename);
+  image = EsploraTFT.loadImage(filename.c_str());
+  return image;
+}
