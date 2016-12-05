@@ -6,14 +6,16 @@
 #define HEIGHT 128 //Height of the screen
 #define WIDTH  160 //Width of the screen
 
-
-uint8_t p;
-// SD Chip Select pin
 const char SD_card = 8;
 const short step = 56;
-short pos = 0;
+short pos = -1;
 short oldPos = pos;
 PImage img;
+
+String pokemonData;
+String id;
+String name;
+String type;
 
 String lookForBreak(String _str, char _breakSym, int _breaktot)
 {
@@ -73,6 +75,7 @@ void setup()
   EsploraTFT.text("Type:", 10, 30);
   // try to access the SD card
   Serial.print("Initializing SD card...\n");
+  
   if (!SD.begin(SD_card)) 
   {
     Serial.println("Failed");
@@ -82,21 +85,14 @@ void setup()
 }
 
 void loop()
-{
-  
-  String id = loadPokemon(pos, step, 0);
-  String name = loadPokemon(pos, step, 1);
-  String type = loadPokemon(pos, step, 2);
-  // String imageName = "f_"+loadPokemon(pos, step, 0)+".bmp";
-  // PImage pokemonImage = EsploraTFT.loadImage(imageName.c_str());
-  
+{ 
   if(Esplora.readButton(SWITCH_LEFT) == LOW && pos > 0)
   {
     EsploraTFT.stroke(0, 0, 0);
     EsploraTFT.text(id.c_str(), 50, 10);
     EsploraTFT.text(name.c_str(), 50, 20);
     EsploraTFT.text(type.c_str(), 50, 30);
-    delay(50);
+    //delay(50);
     pos -= 1;          
    }
    else if(Esplora.readButton(SWITCH_RIGHT) == LOW && pos < 150)
@@ -105,39 +101,39 @@ void loop()
      EsploraTFT.text(id.c_str(), 50, 10);
      EsploraTFT.text(name.c_str(), 50, 20);
      EsploraTFT.text(type.c_str(), 50, 30);
-     delay(50);
+     //delay(50);
      pos += 1;          
     }
     
     if(pos != oldPos)
     {
-    //EsploraTFT.image(pokemonImage, 10, 40);
-      //img = loadImage(pos,'f');
+      img = loadImage(pos+1,'f');  
+      pokemonData = loadPokemon(pos, step);
+      id = lookForBreak(pokemonData, ';', 0);
+      name = lookForBreak(pokemonData, ';', 1);
+      type = lookForBreak(pokemonData, ';', 2);
+           
+      EsploraTFT.stroke(255, 255, 255);
+      EsploraTFT.text(type.c_str(), 50, 30);
+      EsploraTFT.text(name.c_str(), 50, 20);
+      EsploraTFT.text(id.c_str(), 50, 10);
+      EsploraTFT.image(img, 0, 45);
+      img.close();
       oldPos = pos;
     }
-  img = loadImage(pos+1,'f');
-  EsploraTFT.image(img, 0, 0);
-  EsploraTFT.text(type.c_str(), 50, 30);
-  EsploraTFT.text(name.c_str(), 50, 20);
-  EsploraTFT.text(id.c_str(), 50, 10);
-  EsploraTFT.stroke(255, 255, 255);
-
-
 }
 
-String loadPokemon(short _pokemonNum, short const _step, int _entry)
+String loadPokemon(int _pokemonNum, int const _step)
 {
   Serial.println("Start Loading Pokemon");
-  String ret;
-  String pokemonEntry;
+  String ret;//String ret;
   File f = SD.open("pokedex.txt",FILE_READ);
   f.seek(_step*_pokemonNum);
   while (f.position() != (_pokemonNum * _step) + _step) 
   {
-    pokemonEntry = f.readStringUntil('\n');
+    ret = f.readStringUntil('\n');
   }
-  Serial.println(pokemonEntry);
-  ret = lookForBreak(pokemonEntry, ';', _entry);
+  Serial.println(ret);
   Serial.println("Done Loading");
   f.close();
   return ret;
@@ -145,13 +141,11 @@ String loadPokemon(short _pokemonNum, short const _step, int _entry)
 
 PImage loadImage(int _PokemonNum, char _mode)
 {
-  PImage image;
-  String filename = "";
+  String filename;
   filename += _mode;
   filename += "_";
   filename += _PokemonNum;
   filename += ".bmp";
-  Serial.println(filename);
-  image = EsploraTFT.loadImage(filename.c_str());
-  return image;
+
+  return EsploraTFT.loadImage(filename.c_str());
 }
